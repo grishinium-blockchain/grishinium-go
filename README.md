@@ -37,3 +37,14 @@ Dependencies (to be fetched when ready)
 - Storage: Pebble or Badger (TBD)
 
 Once approved, we will fetch and pin these dependencies in go.mod and wire the implementations.
+
+go get github.com/libp2p/go-libp2p github.com/libp2p/go-libp2p-kad-dht github.com/libp2p/go-libp2p-pubsub github.com/libp2p/go-libp2p/p2p/discovery/mdns github.com/multiformats/go-multiaddr github.com/ipfs/go-cid github.com/multiformats/go-multihash github.com/cockroachdb/pebble github.com/decred/dcrd/dcrec/secp256k1/v4 github.com/kilic/bls12-381
+go mod tidy
+
+Fetch libraries
+go get github.com/libp2p/go-libp2p github.com/libp2p/go-libp2p-kad-dht github.com/libp2p/go-libp2p-pubsub github.com/libp2p/go-libp2p/p2p/discovery/mdns github.com/multiformats/go-multiaddr github.com/ipfs/go-cid github.com/multiformats/go-multihash github.com/cockroachdb/pebble github.com/decred/dcrd/dcrec/secp256k1/v4 github.com/kilic/bls12-381
+go mod tidy
+Build (mock default):
+go build ./...
+Build (libp2p):
+go build -tags libp2p -o bin/validator-engine ./cmd/validator-engine
