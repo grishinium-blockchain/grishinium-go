@@ -1,3 +1,3 @@
 package crypto
 
-// Package crypto provides cryptographic primitives and TON-specific crypto.
+// Package crypto provides cryptographic primitives and GRISHINIUM-specific crypto.

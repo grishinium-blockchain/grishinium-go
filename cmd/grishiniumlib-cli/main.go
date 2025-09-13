@@ -3,5 +3,5 @@ package main
 import "fmt"
 
 func main() {
-	fmt.Println("tonlib-cli: not implemented yet (Go migration scaffold)")
+	fmt.Println("grishiniumlib-cli: not implemented yet (Go migration scaffold)")
 }

@@ -1,3 +1,4 @@
-package tonlib
+package grishiniumlib
 
-// Package tonlib is a Go port placeholder for TON library high-level API.
+// Package grishiniumlib is a Go port placeholder for GRISHINIUM library high-level API.
+// NOTE: Per project convention, all TON mentions are replaced with GRISHINIUM.

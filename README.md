@@ -1,7 +1,7 @@
-Grishinium blockchain
+# GRISHINIUM Go Migration Scaffold
 
-Blockchain with Go packages and commands.
-Each package contains placeholders to be implemented
+This directory mirrors the C++ project structure with Go packages and commands.
+Each package contains placeholders to be implemented during migration.
 
 Build all commands under cmd/* with:
   go build ./...

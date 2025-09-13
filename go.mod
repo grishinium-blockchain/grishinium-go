@@ -1,4 +1,4 @@
-module local/ton
+module local/grishinium
 
 go 1.22.0
 
