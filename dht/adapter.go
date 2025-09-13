@@ -29,21 +29,25 @@ func (a *Adapter) FindPeer(ctx context.Context, id string) (Peer, error) {
 }
 
 func (a *Adapter) FindProviders(ctx context.Context, key Key, limit int) ([]Peer, error) {
-	// TODO: интеграция с Kad-DHT: Providers.
-	return nil, errors.New("FindProviders: not implemented yet")
+	addrs, err := a.node.FindProviders(ctx, key, limit)
+	if err != nil {
+		return nil, err
+	}
+	peers := make([]Peer, 0, len(addrs))
+	for _, addr := range addrs {
+		peers = append(peers, Peer{Addr: addr})
+	}
+	return peers, nil
 }
 
 func (a *Adapter) Provide(ctx context.Context, key Key) error {
-	// TODO: интеграция с Kad-DHT: Provide.
-	return errors.New("Provide: not implemented yet")
+	return a.node.Provide(ctx, key)
 }
 
 func (a *Adapter) Get(ctx context.Context, key Key) (Value, error) {
-	// TODO: интеграция с Kad-DHT: Get value (record).
-	return nil, errors.New("Get: not implemented yet")
+	return a.node.GetValue(ctx, key)
 }
 
 func (a *Adapter) Put(ctx context.Context, key Key, value Value) error {
-	// TODO: интеграция с Kad-DHT: Put value (record).
-	return errors.New("Put: not implemented yet")
+	return a.node.PutValue(ctx, key, value)
 }

@@ -62,6 +62,12 @@ func main() {
         os.Exit(1)
     }
     defer ns.Close(context.Background())
+    if addr := ns.Addr(); addr != "" {
+        fmt.Println("listening:", addr)
+        if pid := ns.PeerID(); pid != "" {
+            fmt.Println("bootstrap:", addr+"/p2p/"+pid)
+        }
+    }
 
     // TODO: initialize storage (Pebble/Badger) and state
     // TODO: initialize validator services and start event loop

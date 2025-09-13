@@ -14,6 +14,9 @@ type Node interface {
 	// Addr returns a human-readable address of the node (multiaddr or host:port).
 	Addr() string
 
+	// PeerID returns the string form of the node's peer ID (when applicable).
+	PeerID() string
+
 	// Publish broadcasts data to a topic within the overlay network.
 	Publish(ctx context.Context, topic string, data []byte) error
 	// Subscribe subscribes to a topic and returns a receive-only channel with messages.
@@ -23,6 +26,12 @@ type Node interface {
 
 	// FindPeer locates a peer by ID using DHT.
 	FindPeer(ctx context.Context, id string) (string, error)
+
+	// DHT provider/value operations
+	Provide(ctx context.Context, key []byte) error
+	FindProviders(ctx context.Context, key []byte, limit int) ([]string, error)
+	PutValue(ctx context.Context, key, value []byte) error
+	GetValue(ctx context.Context, key []byte) ([]byte, error)
 }
 
 // Config configures the networking node.

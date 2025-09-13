@@ -5,6 +5,7 @@ package libp2p
 import (
 	"context"
 	"fmt"
+	"encoding/hex"
 
 	libp2p "github.com/libp2p/go-libp2p"
 	crypto "github.com/libp2p/go-libp2p/core/crypto"
@@ -13,6 +14,8 @@ import (
 	kad "github.com/libp2p/go-libp2p-kad-dht"
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
 	ma "github.com/multiformats/go-multiaddr"
+	cid "github.com/ipfs/go-cid"
+	mh "github.com/multiformats/go-multihash"
 
 	"github.com/grishinium-blockchain/grishinium-go/internal/netstack"
 )
@@ -23,6 +26,14 @@ type Node struct {
 	Host   host.Host
 	DHT    *kad.IpfsDHT
 	PubSub *pubsub.PubSub
+}
+
+// PeerID returns the string representation of the local host ID.
+func (n *Node) PeerID() string {
+    if n.Host == nil {
+        return ""
+    }
+    return n.Host.ID().String()
 }
 
 func New(cfg netstack.Config) *Node { return &Node{cfg: cfg} }
@@ -160,19 +171,88 @@ func (n *Node) Unsubscribe(ctx context.Context, topic string) error {
 }
 
 func (n *Node) FindPeer(ctx context.Context, id string) (string, error) {
-	if n.DHT == nil {
-		return "", fmt.Errorf("dht not initialized")
-	}
-	// Placeholder: a real implementation converts id to peer.ID and queries DHT.
-	return "libp2p://peer/" + id, nil
+    if n.DHT == nil {
+        return "", fmt.Errorf("dht not initialized")
+    }
+    // Placeholder: a real implementation converts id to peer.ID and queries DHT.
+    return "libp2p://peer/" + id, nil
 }
 
 // peerInfoFromAddr parses a multiaddr with /p2p/peerID into a PeerInfo.
 // NOTE: kept minimal to avoid pulling extra utils; implement in full later.
 func peerInfoFromAddr(m ma.Multiaddr) (*peer.AddrInfo, error) {
-	pi, err := peer.AddrInfoFromP2pAddr(m)
-	if err != nil {
-		return nil, err
-	}
-	return pi, nil
+    pi, err := peer.AddrInfoFromP2pAddr(m)
+    if err != nil {
+        return nil, err
+    }
+    return pi, nil
+}
+
+// --- DHT helpers and methods ---
+
+func keyToCid(key []byte) (cid.Cid, error) {
+    sum, err := mh.Sum(key, mh.SHA2_256, -1)
+    if err != nil {
+        return cid.Cid{}, err
+    }
+    return cid.NewCidV1(cid.Raw, sum), nil
+}
+
+func keyToDHTPath(key []byte) string {
+    return "/grishinium/" + hex.EncodeToString(key)
+}
+
+// Provide announces this node as a provider for the given key via provider records.
+func (n *Node) Provide(ctx context.Context, key []byte) error {
+    if n.DHT == nil {
+        return fmt.Errorf("dht not initialized")
+    }
+    c, err := keyToCid(key)
+    if err != nil {
+        return err
+    }
+    return n.DHT.Provide(ctx, c, true)
+}
+
+// FindProviders returns up to limit provider addresses for the given key.
+func (n *Node) FindProviders(ctx context.Context, key []byte, limit int) ([]string, error) {
+    if n.DHT == nil {
+        return nil, fmt.Errorf("dht not initialized")
+    }
+    c, err := keyToCid(key)
+    if err != nil {
+        return nil, err
+    }
+    out := make([]string, 0, limit)
+    ch := n.DHT.FindProvidersAsync(ctx, c, limit)
+    for info := range ch {
+        for _, a := range info.Addrs {
+            out = append(out, a.String())
+        }
+        if limit > 0 && len(out) >= limit {
+            break
+        }
+    }
+    if limit > 0 && len(out) > limit {
+        out = out[:limit]
+    }
+    return out, nil
+}
+
+// PutValue stores small metadata value under a namespaced key in DHT.
+func (n *Node) PutValue(ctx context.Context, key, value []byte) error {
+    if n.DHT == nil {
+        return fmt.Errorf("dht not initialized")
+    }
+    k := keyToDHTPath(key)
+    return n.DHT.PutValue(ctx, k, value)
+}
+
+// GetValue retrieves value stored under the namespaced key from DHT.
+func (n *Node) GetValue(ctx context.Context, key []byte) ([]byte, error) {
+    if n.DHT == nil {
+        return nil, fmt.Errorf("dht not initialized")
+    }
+    k := keyToDHTPath(key)
+    return n.DHT.GetValue(ctx, k)
 }
