@@ -1,4 +1,4 @@
-module local/grishinium
+module github.com/grishinium-blockchain/grishinium-go
 
 go 1.22.0
 
