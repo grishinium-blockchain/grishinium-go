@@ -2,6 +2,9 @@ package grishiniumlib
 
 import (
 	"context"
+	"errors"
+	"net"
+	"time"
 	iv "github.com/grishinium-blockchain/grishinium-go/internal/version"
 )
 
@@ -32,9 +35,26 @@ type stubClient struct {
 }
 
 func (c *stubClient) Ping(ctx context.Context) error {
+	if c.cfg.Endpoint == "" {
+		return errors.New("endpoint is empty")
+	}
+	d := &net.Dialer{}
+	// derive timeout from context if set, otherwise use a small default
+	timeout := 3 * time.Second
+	if deadline, ok := ctx.Deadline(); ok {
+		timeout = time.Until(deadline)
+		if timeout <= 0 {
+			timeout = 3 * time.Second
+		}
+	}
+	conn, err := d.DialContext(context.WithTimeout(ctx, timeout), "tcp", c.cfg.Endpoint)
+	if err != nil {
+		return err
+	}
+	_ = conn.Close()
 	return nil
 }
 
 func (c *stubClient) GetVersion(ctx context.Context) (string, error) {
-    return "grishiniumlib " + iv.Version, nil
+	return "grishiniumlib " + iv.Version, nil
 }

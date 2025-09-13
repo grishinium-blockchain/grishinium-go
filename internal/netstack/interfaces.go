@@ -29,4 +29,6 @@ type Node interface {
 type Config struct {
 	ListenAddrs []string // e.g., "/ip4/0.0.0.0/tcp/0"
 	Bootstrap   []string // bootstrap peers (multiaddrs)
+    // IdentityPriv is an optional ed25519 private key in raw form; when empty, an ephemeral identity may be used.
+    IdentityPriv []byte
 }

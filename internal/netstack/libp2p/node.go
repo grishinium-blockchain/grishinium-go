@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	libp2p "github.com/libp2p/go-libp2p"
+	crypto "github.com/libp2p/go-libp2p/core/crypto"
 	host "github.com/libp2p/go-libp2p/core/host"
 	peer "github.com/libp2p/go-libp2p/core/peer"
 	kad "github.com/libp2p/go-libp2p-kad-dht"
@@ -37,9 +38,18 @@ func (n *Node) Start(ctx context.Context) error {
 		addrs = append(addrs, m)
 	}
 
-	h, err := libp2p.New(
-		libp2p.ListenAddrs(addrs...),
-	)
+	// Identity option (if provided)
+	var opts []libp2p.Option
+	opts = append(opts, libp2p.ListenAddrs(addrs...))
+	if len(n.cfg.IdentityPriv) > 0 {
+		priv, err := crypto.UnmarshalEd25519PrivateKey(n.cfg.IdentityPriv)
+		if err != nil {
+			return fmt.Errorf("unmarshal ed25519 identity: %w", err)
+		}
+		opts = append(opts, libp2p.Identity(priv))
+	}
+
+	h, err := libp2p.New(opts...)
 	if err != nil {
 		return err
 	}
