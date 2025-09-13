@@ -20,6 +20,9 @@ type Node struct {
 	values    map[string][]byte     // key -> value
 }
 
+// EnableMDNS is a no-op in the mock implementation.
+func (n *Node) EnableMDNS(ctx context.Context) error { return nil }
+
 // Provide announces this node as a provider for the given key.
 func (n *Node) Provide(ctx context.Context, key []byte) error {
     n.mu.Lock()

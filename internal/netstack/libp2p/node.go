@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"encoding/hex"
+	"time"
 
 	libp2p "github.com/libp2p/go-libp2p"
 	crypto "github.com/libp2p/go-libp2p/core/crypto"
@@ -13,6 +14,7 @@ import (
 	peer "github.com/libp2p/go-libp2p/core/peer"
 	kad "github.com/libp2p/go-libp2p-kad-dht"
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
+	mdns "github.com/libp2p/go-libp2p/p2p/discovery/mdns"
 	ma "github.com/multiformats/go-multiaddr"
 	cid "github.com/ipfs/go-cid"
 	mh "github.com/multiformats/go-multihash"
@@ -186,6 +188,25 @@ func peerInfoFromAddr(m ma.Multiaddr) (*peer.AddrInfo, error) {
         return nil, err
     }
     return pi, nil
+}
+
+// EnableMDNS enables LAN discovery for libp2p host.
+func (n *Node) EnableMDNS(ctx context.Context) error {
+    if n.Host == nil {
+        return fmt.Errorf("host not initialized")
+    }
+    service, err := mdns.NewMdnsService(ctx, n.Host, time.Second*10, "grishinium-mdns")
+    if err != nil {
+        return err
+    }
+    service.RegisterNotifee(mdnsNotifee{h: n.Host})
+    return nil
+}
+
+type mdnsNotifee struct{ h host.Host }
+
+func (m mdnsNotifee) HandlePeerFound(pi peer.AddrInfo) {
+    _ = m.h.Connect(context.Background(), pi)
 }
 
 // --- DHT helpers and methods ---

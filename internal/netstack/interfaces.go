@@ -17,6 +17,9 @@ type Node interface {
 	// PeerID returns the string form of the node's peer ID (when applicable).
 	PeerID() string
 
+	// EnableMDNS enables local network peer discovery when supported.
+	EnableMDNS(ctx context.Context) error
+
 	// Publish broadcasts data to a topic within the overlay network.
 	Publish(ctx context.Context, topic string, data []byte) error
 	// Subscribe subscribes to a topic and returns a receive-only channel with messages.
