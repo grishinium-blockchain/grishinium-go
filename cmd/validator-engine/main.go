@@ -10,6 +10,8 @@ import (
     appctx "github.com/grishinium-blockchain/grishinium-go/internal/appctx"
     cfgpkg "github.com/grishinium-blockchain/grishinium-go/internal/config"
     logger "github.com/grishinium-blockchain/grishinium-go/internal/log"
+    mocknet "github.com/grishinium-blockchain/grishinium-go/internal/netstack/mock"
+    netstack "github.com/grishinium-blockchain/grishinium-go/internal/netstack"
 )
 
 func usage() {
@@ -39,7 +41,14 @@ func main() {
     ctx, opCancel := context.WithTimeout(root, cfg.Timeout)
     defer opCancel()
 
-    // TODO: initialize production-grade networking (libp2p: transport, kad-dht, pubsub)
+    // Networking node (mock for now; use libp2p under build tag `libp2p` in future)
+    var ns netstack.Node = mocknet.New(netstack.Config{})
+    if err := ns.Start(ctx); err != nil {
+        fmt.Fprintln(os.Stderr, "netstack start error:", err)
+        os.Exit(1)
+    }
+    defer ns.Close(context.Background())
+
     // TODO: initialize storage (Pebble/Badger) and state
     // TODO: initialize validator services and start event loop
 
